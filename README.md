@@ -1,39 +1,45 @@
 # Claude Skills
 
-Bộ sưu tập các [Claude skill](https://docs.claude.com/en/docs/claude-code/skills) dùng cho Claude Code.
+A collection of [Claude skills](https://docs.claude.com/en/docs/claude-code/skills) for Claude Code.
 
-## Danh sách skill
+## Skills
 
-| Skill | Mô tả |
-|---|---|
-| [code2srs](skills/code2srs/SKILL.md) | Đọc ngược source code của một web app để sinh tài liệu SRS bằng tiếng Việt: màn hình, flow nghiệp vụ, cron job, thuật ngữ, database |
+| Skill | Language | Description |
+|---|---|---|
+| [code2srs](en/code2srs/SKILL.md) | EN | Reverse-engineer an SRS from the source code of a web app, in English: screens, business flows, cron jobs, glossary, database |
+| [code2srs](vi/code2srs/SKILL.md) | VI | Same as above, generating the SRS in Vietnamese |
 
-## Cài đặt
+## Installation
 
-Copy thư mục của skill cần dùng vào thư mục skills của Claude Code:
+Pick **one** language version (`en/` or `vi/`) of the skill you need and copy it into Claude Code's skills folder:
 
-* Dùng cho mọi dự án: `~/.claude/skills/<tên-skill>/`
-* Chỉ dùng cho một dự án: `<dự-án>/.claude/skills/<tên-skill>/`
+* For all projects: `~/.claude/skills/<skill-name>/`
+* For a single project: `<project>/.claude/skills/<skill-name>/`
 
-Ví dụ với `code2srs`:
+Example with `code2srs`:
 
 ```bash
-cp -r skills/code2srs ~/.claude/skills/code2srs
+# English version
+cp -r en/code2srs ~/.claude/skills/code2srs
+# or the Vietnamese version
+cp -r vi/code2srs ~/.claude/skills/code2srs
 ```
 
-## Cấu trúc repo
+## Repo structure
 
 ```
-skills/
-  <tên-skill>/
-    SKILL.md   # điểm vào của skill
-    ...        # file phụ: convention, templates, scripts...
-CLAUDE.md      # hướng dẫn cho Claude Code khi sửa repo này
+en/            # skills written in English
+  <skill-name>/
+    SKILL.md   # the skill's entry point
+    ...        # supporting files: convention, templates, scripts...
+vi/            # skills written in Vietnamese
+  <skill-name>/ # same name as the en/ version, if any
+CLAUDE.md      # guidance for Claude Code when editing this repo
 README.md
 ```
 
-## Thêm skill mới
+## Adding a new skill
 
-1. Tạo thư mục `skills/<tên-skill>/` có `SKILL.md` (frontmatter gồm `name` và `description`).
-2. Giữ thư mục skill tự chứa đủ: không tham chiếu file nằm ngoài thư mục đó.
-3. Thêm một dòng vào bảng [Danh sách skill](#danh-sách-skill).
+1. Create the folder `<language>/<skill-name>/` with a `SKILL.md` (frontmatter containing `name` and `description`).
+2. Keep the skill folder self-contained: do not reference files outside it.
+3. Add a row to the [Skills](#skills) table.

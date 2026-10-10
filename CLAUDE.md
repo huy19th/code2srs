@@ -2,93 +2,106 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Repo này là gì
+## What this repo is
 
-Repo chứa source của nhiều Claude skill.
-* Mỗi skill là một thư mục con trong `skills/`, có `SKILL.md` làm điểm vào.
-* Repo này không phải một app. Gần như toàn bộ là file Markdown chứa hướng dẫn cho agent chạy skill.
-* Danh sách skill xem [README.md](README.md).
+This repo holds the source of several Claude skills.
+* Skills are split by language: `en/` (English) and `vi/` (Vietnamese). Each skill is a subfolder of a language folder, with `SKILL.md` as its entry point.
+* This repo is not an app. It is almost entirely Markdown files containing instructions for the agent running the skill.
+* For the list of skills, see [README.md](README.md).
 
-## Cấu trúc thư mục
+## Folder structure
 
 ```
-skills/
-  <tên-skill>/
-    SKILL.md        # điểm vào, frontmatter có name + description
-    ...             # file phụ của skill: convention, templates, scripts...
+en/
+  <skill-name>/
+    SKILL.md        # entry point, frontmatter has name + description
+    ...             # the skill's supporting files: convention, templates, scripts...
+vi/
+  <skill-name>/
+    ...
 ```
 
-* Tên thư mục skill trùng với `name` trong frontmatter của `SKILL.md`.
-* Mỗi thư mục skill phải **tự chứa đủ**: không link hay import file nằm ngoài thư mục của nó, vì khi cài chỉ thư mục đó được copy.
-* Link giữa các file trong một skill dùng đường dẫn tương đối.
+* The skill folder name matches the `name` in the `SKILL.md` frontmatter.
+* The two language versions of a skill use the **same name** (`en/<skill-name>`, `vi/<skill-name>`), because a user installs only one of them. A skill does not have to exist in both languages.
+* When a skill exists in both languages, the two versions must be **structurally identical**: same file list, same section order, same rules. When you change one version, make the matching change in the other, unless the user says to change only one.
+* Each skill folder must be **self-contained**: do not link to or import files outside its folder, because only that folder is copied on install.
+* Links between files within a skill use relative paths.
 
-Cài một skill: copy thư mục `skills/<tên-skill>/` vào `~/.claude/skills/<tên-skill>/` (hoặc vào `.claude/skills/` của một dự án).
+To install a skill: copy the `<language>/<skill-name>/` folder to `~/.claude/skills/<skill-name>/` (or to a project's `.claude/skills/`).
 
-## Thêm skill mới
+## Adding a new skill
 
-* Tạo thư mục `skills/<tên-skill>/` với `SKILL.md`.
-* Thêm một dòng vào bảng skill trong `README.md`.
-* Nếu skill có quy trình hoặc lệnh riêng cần ghi chú cho agent sửa skill, thêm một mục `## Skill: <tên-skill>` vào cuối file này.
+* Create the folder `<language>/<skill-name>/` with a `SKILL.md`.
+* Add a row to the skill table in `README.md`.
+* If the skill has its own process or commands that an agent editing the skill should know about, add a `## Skill: <skill-name>` section at the end of this file.
 
-## Ngôn ngữ
+## Language
 
-Nội dung skill viết bằng tiếng Việt, trừ khi skill đó quy định khác. Khi sửa thì giữ đúng ngôn ngữ đang dùng.
+* Skill content is written in the language of its parent folder: English under `en/`, Vietnamese under `vi/`.
+* When editing, keep the language already in use.
+* This file and the README are written in English.
 
 ## Skill: code2srs
 
-Thư mục: `skills/code2srs/`. Các đường dẫn trong mục này tính từ thư mục đó.
+Folders: `en/code2srs/` and `vi/code2srs/`. Paths in this section are relative to the skill folder.
 
-* Skill đọc ngược source code của một web app để sinh tài liệu SRS (Software Requirements Specification) bằng tiếng Việt.
-* Tài liệu được ghi vào thư mục `srs/` của *dự án đích*, không phải repo này.
+* The skill reverse-reads the source code of a web app to generate SRS (Software Requirements Specification) documents. The `en/` version generates English docs; the `vi/` version generates Vietnamese docs.
+* The docs are written to the `srs/` folder of the *target project*, not this repo.
 
-### Lệnh
+### Commands
 
-Code duy nhất là một script Node (không có dependency, không cần build). Script kiểm tra link tương đối và anchor heading trong một thư mục `srs/` đã sinh:
+The only code is a Node script (no dependencies, no build). It checks relative links and heading anchors in a generated `srs/` folder:
 
 ```bash
-node skills/code2srs/scripts/check-links.mjs <đường-dẫn-srs>
+node en/code2srs/scripts/check-links.mjs <srs-path>
+node vi/code2srs/scripts/check-links.mjs <srs-path>
 ```
 
-* Exit code 1 khi gặp một trong các lỗi:
-  * file không tồn tại
-  * anchor không khớp heading nào
-  * heading trùng
-* Anchor tạo theo quy tắc slug của GitHub: chữ thường, giữ dấu tiếng Việt, bỏ dấu câu, khoảng trắng → `-`.
-* Muốn test thay đổi thì dựng một thư mục `srs/` mẫu nhỏ trong scratchpad.
+* The two script versions differ only in messages and comments. Their logic must stay identical.
+* Exit code 1 on any of these errors:
+  * file does not exist
+  * anchor matches no heading
+  * duplicate heading
+* Anchors follow GitHub's slug rules: lowercase, Vietnamese diacritics kept, punctuation removed, spaces → `-`.
+* To test a change, build a small sample `srs/` folder in the scratchpad.
 
-### Các file của skill liên kết với nhau thế nào
+### How the skill's files relate
 
-| File | Vai trò |
+| File | Role |
 |---|---|
-| `SKILL.md` | Điểm vào và **quy trình**: 9 bước sinh tài liệu, chụp screenshot, xử lý feedback, cập nhật tài liệu khi code thay đổi |
-| `convention.md` | **Cách viết**: mẫu viết điều kiện, format tham chiếu `<ý nghĩa> (<bảng>.<cột>)`, mức độ technical, quy tắc URL/link/đặt tên, marker |
-| `templates/*.md` | **Hình dạng** từng file output. `{{...}}` là chỗ cần điền; comment HTML là hướng dẫn cho agent và bị xóa khỏi output |
-| `output.md` | **Nội dung**: cấu trúc thư mục `srs/` và mỗi file cần có thông tin gì |
+| `SKILL.md` | Entry point and **process**: the 9 generation steps, screenshots, handling feedback, updating docs when the code changes |
+| `convention.md` | **How to write**: condition patterns, the `<meaning> (<table>.<column>)` reference format, technical level, URL/link/naming rules, markers |
+| `templates/*.md` | **Shape** of each output file. `{{...}}` are placeholders; HTML comments are instructions for the agent and are removed from the output |
+| `output.md` | **Content**: the `srs/` folder structure and what information each file must contain |
 
-* Khi mâu thuẫn, ưu tiên theo thứ tự: convention.md → templates → output.md (thứ tự này được ghi trong SKILL.md).
-* Mỗi quy tắc chỉ nên nằm ở **một** file. Khi sửa, đặt quy tắc vào đúng file rồi tham chiếu từ các file khác, không chép lặp.
+* On conflict, priority is: convention.md → templates → output.md (this order is stated in SKILL.md).
+* Each rule should live in **one** file only. When editing, put the rule in the right file and reference it from the others; do not duplicate it.
 
-Thứ tự sinh tài liệu trong SKILL.md là quan trọng, vì tài liệu sinh sau link đến tài liệu sinh trước:
+The generation order in SKILL.md matters, because docs generated later link to docs generated earlier:
 1. inventory
 2. database
 3. common-words
 4. layout
 5. features
 6. cron-jobs
-7. flows, kèm điền ngược mục "Được sử dụng bởi" trong database.md
+7. flows, plus back-filling the "Used by" section in database.md
 8. overview
-9. kiểm tra
+9. verification
 
-### Quy trình feedback
+### Feedback process
 
-User cải thiện skill bằng cách review tài liệu đã sinh, thường dưới dạng cặp actual/expected. Mục "Xử lý feedback" trong SKILL.md quy định từng loại feedback sửa ở đâu:
-* **Cách viết** → `convention.md`. Thêm quy tắc, và thêm nguyên văn cặp actual/expected của user thành một dòng trong bảng ❌ Sai / ✅ Đúng của mục tương ứng.
-* **Hình dạng file** → file tương ứng trong `templates/`.
-* **Nội dung cần có** → `output.md`.
-* **Sai ở một tài liệu cụ thể** → chỉ sửa tài liệu đó.
+The user improves the skill by reviewing the generated docs, usually as actual/expected pairs. The "Handling feedback" section in SKILL.md defines where each type of feedback is fixed:
+* **Writing style** → `convention.md`. Add the rule, and add the user's actual/expected pair verbatim as a row in the ❌ Wrong / ✅ Right table (vi version: ❌ Sai / ✅ Đúng) of the relevant section.
+* **File shape** → the matching file in `templates/`.
+* **Required content** → `output.md`.
+* **Mistake in one specific doc** → fix only that doc.
 
-Giữ nguyên câu chữ của các quy tắc user đã chốt, không diễn đạt lại.
+Keep the exact wording of rules the user has settled; do not paraphrase them.
 
-### Ngôn ngữ
+Feedback given for one version is applied to the other by translating it, including the actual/expected pair. The version in the same language as the feedback keeps it verbatim.
 
-Toàn bộ nội dung skill và tài liệu sinh ra đều bằng tiếng Việt. Khi sửa thì viết theo đúng convention của chính skill: dùng bullet thay cho đoạn văn dài; điều kiện viết theo mẫu ở convention.md mục 3.
+### Language
+
+* Skill content and generated docs use the language of the folder: English under `en/`, Vietnamese under `vi/`.
+* Fixed headings in the generated docs have matching names across the two versions. E.g. `Sources` ↔ `Nguồn`, `Needs confirmation` ↔ `Cần xác nhận`, `Used by` ↔ `Được sử dụng bởi`.
+* When editing, follow the skill's own convention: bullets instead of long paragraphs; conditions follow the patterns in convention.md section 3.
